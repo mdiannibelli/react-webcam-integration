@@ -1,0 +1,30 @@
+h1 {
+    font-size: 3rem;
+    font-weight: 500;
+}
+
+.modalcontainer {
+    display: flex;
+    justify-content: center;
+}
+
+button {
+    font-size: 1.2rem;
+    padding: 12px 32px 12px 32px;
+    background-color: #fbfbfb;
+    color: black;
+    font-weight: 600;
+    border-radius: 16px;
+    user-select: none;
+    outline: none;
+    border: 0;
+    cursor: pointer;
+
+    transition: all;
+    transition-duration: 300ms;
+
+    &:hover {
+        background-color: #2b36ffd4;
+        color: #fbfbfb;
+    }
+}
