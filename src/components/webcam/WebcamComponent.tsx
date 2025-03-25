@@ -1,6 +1,8 @@
 import './Webcam.css'
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
+import { makeNotification } from '../../helpers/notification';
+import { useScreenshotStore } from '../../store/webcam-store';
 
 const WEBCAM_STATES = {
     LOADING: 'LOADING',
@@ -18,7 +20,17 @@ const videoConstraints = {
 };
 
 const WebcamComponent = () => {
+    const { addNewScreenshot, screenshots } = useScreenshotStore();
     const [webcamState, setWebcamState] = useState(WEBCAM_STATES.LOADING);
+    const webcamRef = useRef<Webcam>(null);
+    console.log(screenshots)
+    const capture = useCallback(() => {
+        if (!webcamRef.current) return;
+        const imgSrc = webcamRef.current.getScreenshot();
+        if (!imgSrc) makeNotification("Error at saving screenshot", "error");
+        makeNotification("Screenshot saved!", "success");
+        addNewScreenshot(imgSrc!);
+    }, [webcamRef, addNewScreenshot]);
 
     navigator.mediaDevices.getUserMedia(videoConstraints).then(mediaStream => {
         if (mediaStream.active) {
@@ -35,11 +47,19 @@ const WebcamComponent = () => {
                 &&
                 <div>
                     <Webcam
+                        ref={webcamRef}
                         audio={false}
                         mirrored={false}
                         screenshotFormat='image/webp'
                         screenshotQuality={1} // add Low => 0.33, Medium => 0.66, High => 1
                     />
+                    {
+                        webcamRef.current?.video !== null &&
+                        <div className='webcam-actions'>
+                            <button className='take-screenshot' onClick={capture}>Screenshot</button>
+                            <button className='record-video' onClick={capture}>Record</button>
+                        </div>
+                    }
                 </div>
 
             }

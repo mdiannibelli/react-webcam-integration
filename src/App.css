@@ -1,3 +1,10 @@
+.header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
 h1 {
     font-size: 3rem;
     font-weight: 500;
@@ -8,7 +15,7 @@ h1 {
     justify-content: center;
 }
 
-button {
+.modalbtn {
     font-size: 1.2rem;
     padding: 12px 32px 12px 32px;
     background-color: #fbfbfb;
@@ -27,4 +34,97 @@ button {
         background-color: #2b36ffd4;
         color: #fbfbfb;
     }
+}
+
+.close-modal-btn {
+    position: relative;
+    z-index: 20;
+    background-color: transparent;
+    border: 1px solid transparent;
+    font-size: large;
+    color: red;
+    padding: 12px 32px 12px 32px;
+    cursor: pointer;
+    border: none;
+
+    &:hover {
+        border: 1px solid red;
+        border-radius: 16px;
+    }
+}
+
+.screenshots-container {
+    margin: 24px;
+
+    h2 {
+        font-size: x-large;
+        font-weight: 500;
+
+    }
+
+    .remove-screenshots {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        max-width: fit-content;
+        margin: auto;
+        border: 1px solid white;
+        margin-top: 32px;
+        background: transparent;
+        padding: 12px 12px 12px 12px;
+        cursor: pointer;
+        border-radius: 8px;
+
+        &:hover {
+            background-color: red;
+            border: 1px solid red;
+            transition-duration: 500ms;
+        }
+    }
+
+    .screenshots {
+        display: flex;
+        gap: 24px;
+        width: 100%;
+
+        .screenshot {
+            width: 320px;
+            height: 250px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+    }
+}
+
+.fullscreen-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.fullscreen-image {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 8px;
+}
+
+.close-fullscreen-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #ff4d4d;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
 }
