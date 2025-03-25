@@ -73,10 +73,10 @@ const WebcamComponent = () => {
         mediaRecorderRef.current.stop();
         setIsRecording(false);
 
-        if (recordedChunks.length === 0) {
+        /* if (recordedChunks.length === 0) {
             makeNotification("Error at saving video", "error");
             return;
-        }
+        } */
 
         const completeBlob = new Blob(recordedChunks, { type: "video/webm" });
         addVideo(completeBlob);

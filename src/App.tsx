@@ -57,17 +57,17 @@ function App() {
       }
       {
         videos.length > 0 &&
-        <div className='screenshots-container'>
+        <div className='videos-container'>
           <h2>Your videos:</h2>
-          <div className='screenshots'>
+          <div className='videos'>
             {videos.map((video, index) => (
-              <video key={index} controls width="300">
+              <video key={index} controls width="300" className='video'>
                 <source src={URL.createObjectURL(video)} type={video.type} />
                 Your browser does not support the video tag.
               </video>
             ))}
           </div>
-          <button onClick={() => clearVideos()} className='remove-screenshots'>Remove all videos</button>
+          <button onClick={() => clearVideos()} className='remove-videos'>Remove all videos</button>
         </div>
       }
 

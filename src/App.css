@@ -97,6 +97,48 @@ h1 {
     }
 }
 
+.videos-container {
+    margin: 24px;
+
+    h2 {
+        font-size: x-large;
+        font-weight: 500;
+
+    }
+
+    .remove-videos {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        max-width: fit-content;
+        margin: auto;
+        border: 1px solid white;
+        margin-top: 32px;
+        background: transparent;
+        padding: 12px 12px 12px 12px;
+        cursor: pointer;
+        border-radius: 8px;
+
+        &:hover {
+            background-color: red;
+            border: 1px solid red;
+            transition-duration: 500ms;
+        }
+    }
+
+    .videos {
+        display: flex;
+        gap: 24px;
+        width: 100%;
+
+        .video {
+            position: relative;
+            z-index: -5;
+        }
+    }
+}
+
 .fullscreen-overlay {
     position: fixed;
     top: 0;
