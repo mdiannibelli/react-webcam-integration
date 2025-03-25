@@ -2,7 +2,7 @@ import './Webcam.css'
 import { useCallback, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { makeNotification } from '../../helpers/notification';
-import { useScreenshotStore } from '../../store/webcam-store';
+import { useScreenshotStore, useVideoStore } from '../../store/webcam-store';
 
 const WEBCAM_STATES = {
     LOADING: 'LOADING',
@@ -20,10 +20,21 @@ const videoConstraints = {
 };
 
 const WebcamComponent = () => {
-    const { addNewScreenshot, screenshots } = useScreenshotStore();
+    const { addNewScreenshot } = useScreenshotStore();
+    const { addVideo } = useVideoStore();
     const [webcamState, setWebcamState] = useState(WEBCAM_STATES.LOADING);
+    const [isRecording, setIsRecording] = useState(false);
+    const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
+
     const webcamRef = useRef<Webcam>(null);
-    console.log(screenshots)
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+
+    navigator.mediaDevices.getUserMedia(videoConstraints).then(mediaStream => {
+        if (mediaStream.active) {
+            setWebcamState(WEBCAM_STATES.ACTIVE);
+        }
+    }).catch(() => setWebcamState(WEBCAM_STATES.DENIED));
+
     const capture = useCallback(() => {
         if (!webcamRef.current) return;
         const imgSrc = webcamRef.current.getScreenshot();
@@ -32,11 +43,48 @@ const WebcamComponent = () => {
         addNewScreenshot(imgSrc!);
     }, [webcamRef, addNewScreenshot]);
 
-    navigator.mediaDevices.getUserMedia(videoConstraints).then(mediaStream => {
-        if (mediaStream.active) {
-            setWebcamState(WEBCAM_STATES.ACTIVE);
+    const handleDataAvailable = useCallback(
+        ({ data }: { data: Blob }) => {
+            if (data && data.size > 0) {
+                setRecordedChunks((prev) => [...prev, data]);
+            }
+        },
+        []
+    );
+
+    const handleStartRecordClick = useCallback(() => {
+        setIsRecording(true);
+        if (!webcamRef.current || !webcamRef.current.stream) return;
+        mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
+            mimeType: "video/webm"
+        });
+        mediaRecorderRef.current.addEventListener(
+            "dataavailable",
+            handleDataAvailable
+        );
+        mediaRecorderRef.current.start();
+    }, [handleDataAvailable]);
+
+
+
+    const handleStopRecordClick = useCallback(() => {
+        if (!mediaRecorderRef.current) return;
+
+        mediaRecorderRef.current.stop();
+        setIsRecording(false);
+
+        if (recordedChunks.length === 0) {
+            makeNotification("Error at saving video", "error");
+            return;
         }
-    }).catch(() => setWebcamState(WEBCAM_STATES.DENIED));
+
+        const completeBlob = new Blob(recordedChunks, { type: "video/webm" });
+        addVideo(completeBlob);
+        makeNotification("Video saved!", "success");
+
+        setRecordedChunks([]);
+        setIsRecording(false);
+    }, [addVideo, recordedChunks]);
 
     // TODO: Create context, get Webcam options with a customHook, and provide an interface to change it.
     return (
@@ -53,13 +101,16 @@ const WebcamComponent = () => {
                         screenshotFormat='image/webp'
                         screenshotQuality={1} // add Low => 0.33, Medium => 0.66, High => 1
                     />
-                    {
-                        webcamRef.current?.video !== null &&
-                        <div className='webcam-actions'>
-                            <button className='take-screenshot' onClick={capture}>Screenshot</button>
-                            <button className='record-video' onClick={capture}>Record</button>
-                        </div>
-                    }
+
+                    <div className='webcam-actions'>
+                        <button className='take-screenshot' onClick={capture}>Screenshot</button>
+                        {
+                            isRecording
+                                ? <button className='record-video' onClick={handleStopRecordClick}>Stop Recording</button>
+                                : <button className='record-video' onClick={handleStartRecordClick}>Record</button>
+                        }
+                    </div>
+
                 </div>
 
             }

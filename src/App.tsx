@@ -2,11 +2,12 @@ import { useState } from 'react';
 import Modal from "./components/modal/Modal";
 import { ToastContainer } from 'react-toastify';
 import './App.css';
-import { useScreenshotStore } from './store/webcam-store';
+import { useScreenshotStore, useVideoStore } from './store/webcam-store';
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { screenshots, clearScreenshots } = useScreenshotStore();
+  const { videos, clearVideos } = useVideoStore();
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   const openFullscreen = (screenshot: string) => {
@@ -52,6 +53,21 @@ function App() {
             ))}
           </div>
           <button onClick={() => clearScreenshots()} className='remove-screenshots'>Remove all screenshots</button>
+        </div>
+      }
+      {
+        videos.length > 0 &&
+        <div className='screenshots-container'>
+          <h2>Your videos:</h2>
+          <div className='screenshots'>
+            {videos.map((video, index) => (
+              <video key={index} controls width="300">
+                <source src={URL.createObjectURL(video)} type={video.type} />
+                Your browser does not support the video tag.
+              </video>
+            ))}
+          </div>
+          <button onClick={() => clearVideos()} className='remove-screenshots'>Remove all videos</button>
         </div>
       }
 
