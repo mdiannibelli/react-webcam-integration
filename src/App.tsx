@@ -88,7 +88,6 @@ function App() {
               <div key={index}>
                 <video controls width="300" className='video'>
                   <source src={videoUrl} type='video/*' />
-                  Your browser does not support the video tag.
                 </video>
                 <button className='remove-videos' onClick={() => downloadVideo(videoUrl)}>Descargar</button>
               </div>
@@ -111,4 +110,4 @@ function App() {
   )
 }
 
-export default App
+export default App;
