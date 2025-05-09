@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 interface ScreenshotStore {
     screenshots: string[];
@@ -8,31 +9,43 @@ interface ScreenshotStore {
 }
 
 interface VideoStore {
-    videos: Blob[];
-    addVideo: (newVideo: Blob) => void;
-    removeVideo: (video: Blob) => void;
+    videos: string[];
+    addVideo: (newVideo: string) => void;
+    removeVideo: (videoUrl: string) => void;
     clearVideos: () => void;
 }
 
-export const useScreenshotStore = create<ScreenshotStore>((set) => ({
-    screenshots: [],
-    addNewScreenshot: (newScreenshot: string) => set((state) => ({
-        screenshots: [...state.screenshots, newScreenshot]
-    })),
-    removeScreenshot: (screenshot: string) => set((state) => ({
-        screenshots: state.screenshots.filter((s) => s !== screenshot),
-    })),
-    clearScreenshots: () => set({ screenshots: [] })
-}))
+export const useScreenshotStore = create<ScreenshotStore>()(
+    persist(
+        (set) => ({
+            screenshots: [],
+            addNewScreenshot: (newScreenshot: string) => set((state) => ({
+                screenshots: [...state.screenshots, newScreenshot]
+            })),
+            removeScreenshot: (screenshot: string) => set((state) => ({
+                screenshots: state.screenshots.filter((s) => s !== screenshot),
+            })),
+            clearScreenshots: () => set({ screenshots: [] })
+        }),
+        {
+            name: 'screenshot-storage',
+        }
+    )
+)
 
-
-
-export const useVideoStore = create<VideoStore>((set) => ({
-    videos: [],
-    addVideo: (newVideo) => set((state) => ({ videos: [...state.videos, newVideo] })),
-    removeVideo: (videoToRemove) =>
-        set((state) => ({
-            videos: state.videos.filter((video) => video !== videoToRemove),
-        })),
-    clearVideos: () => set({ videos: [] }),
-}));
+export const useVideoStore = create<VideoStore>()(
+    persist(
+        (set) => ({
+            videos: [],
+            addVideo: (newVideo: string) => set((state) => ({ videos: [...state.videos, newVideo] })),
+            removeVideo: (videoUrl: string) =>
+                set((state) => ({
+                    videos: state.videos.filter((url) => url !== videoUrl),
+                })),
+            clearVideos: () => set({ videos: [] }),
+        }),
+        {
+            name: 'video-storage',
+        }
+    )
+)

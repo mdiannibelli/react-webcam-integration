@@ -18,6 +18,30 @@ function App() {
     setFullscreenImage(null);
   };
 
+  const getFileExtension = (mimeType: string) => {
+    switch (mimeType) {
+      case 'video/mp4':
+      case 'video/mp4;codecs=h264':
+        return 'mp4';
+      case 'video/webm':
+      case 'video/webm;codecs=vp8':
+      case 'video/webm;codecs=vp9':
+      case 'video/webm;codecs=h264':
+        return 'webm';
+      default:
+        return 'webm';
+    }
+  };
+
+  const downloadVideo = (videoUrl: string) => {
+    const a = document.createElement('a');
+    a.href = videoUrl;
+    const mimeType = videoUrl.split(';')[0];
+    const extension = getFileExtension(mimeType);
+    a.download = `video.${extension}`;
+    a.click();
+  }
+
   return (
     <div>
       <div className='header'>
@@ -60,11 +84,14 @@ function App() {
         <div className='videos-container'>
           <h2>Your videos:</h2>
           <div className='videos'>
-            {videos.map((video, index) => (
-              <video key={index} controls width="300" className='video'>
-                <source src={URL.createObjectURL(video)} type={video.type} />
-                Your browser does not support the video tag.
-              </video>
+            {videos.map((videoUrl, index) => (
+              <div key={index}>
+                <video controls width="300" className='video'>
+                  <source src={videoUrl} type='video/*' />
+                  Your browser does not support the video tag.
+                </video>
+                <button className='remove-videos' onClick={() => downloadVideo(videoUrl)}>Descargar</button>
+              </div>
             ))}
           </div>
           <button onClick={() => clearVideos()} className='remove-videos'>Remove all videos</button>

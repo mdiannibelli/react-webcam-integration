@@ -19,19 +19,40 @@ const videoConstraints = {
     }
 };
 
+const MIME_TYPES = [
+    'video/mp4;codecs=h264',
+    'video/webm;codecs=h264',
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=vp8',
+    'video/webm'
+];
+
 const WebcamComponent = () => {
     const { addNewScreenshot } = useScreenshotStore();
     const { addVideo } = useVideoStore();
     const [webcamState, setWebcamState] = useState(WEBCAM_STATES.LOADING);
     const [isRecording, setIsRecording] = useState(false);
     const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
+    const [selectedMimeType, setSelectedMimeType] = useState<string>('');
 
     const webcamRef = useRef<Webcam>(null);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
+    // Detectar el mejor formato soportado
+    const getSupportedMimeType = () => {
+        for (const mimeType of MIME_TYPES) {
+            if (MediaRecorder.isTypeSupported(mimeType)) {
+                console.log('Using mime type:', mimeType);
+                return mimeType;
+            }
+        }
+        return 'video/webm'; // Fallback por defecto
+    };
+
     navigator.mediaDevices.getUserMedia(videoConstraints).then(mediaStream => {
         if (mediaStream.active) {
             setWebcamState(WEBCAM_STATES.ACTIVE);
+            setSelectedMimeType(getSupportedMimeType());
         }
     }).catch(() => setWebcamState(WEBCAM_STATES.DENIED));
 
@@ -55,17 +76,23 @@ const WebcamComponent = () => {
     const handleStartRecordClick = useCallback(() => {
         setIsRecording(true);
         if (!webcamRef.current || !webcamRef.current.stream) return;
-        mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
-            mimeType: "video/webm"
-        });
-        mediaRecorderRef.current.addEventListener(
-            "dataavailable",
-            handleDataAvailable
-        );
-        mediaRecorderRef.current.start();
-    }, [handleDataAvailable]);
 
-
+        try {
+            mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
+                mimeType: selectedMimeType,
+                videoBitsPerSecond: 2500000
+            });
+            mediaRecorderRef.current.addEventListener(
+                "dataavailable",
+                handleDataAvailable
+            );
+            mediaRecorderRef.current.start();
+        } catch (error) {
+            console.error('Error starting recording:', error);
+            makeNotification("Error starting recording", "error");
+            setIsRecording(false);
+        }
+    }, [handleDataAvailable, selectedMimeType]);
 
     const handleStopRecordClick = useCallback(() => {
         if (!mediaRecorderRef.current) return;
@@ -73,18 +100,14 @@ const WebcamComponent = () => {
         mediaRecorderRef.current.stop();
         setIsRecording(false);
 
-        /* if (recordedChunks.length === 0) {
-            makeNotification("Error at saving video", "error");
-            return;
-        } */
-
-        const completeBlob = new Blob(recordedChunks, { type: "video/webm" });
-        addVideo(completeBlob);
+        const completeBlob = new Blob(recordedChunks, { type: selectedMimeType });
+        const videoUrl = URL.createObjectURL(completeBlob);
+        addVideo(videoUrl);
         makeNotification("Video saved!", "success");
 
         setRecordedChunks([]);
         setIsRecording(false);
-    }, [addVideo, recordedChunks]);
+    }, [addVideo, recordedChunks, selectedMimeType]);
 
     // TODO: Create context, get Webcam options with a customHook, and provide an interface to change it.
     return (
